@@ -1,0 +1,13 @@
+# Environment
+.env
+myenv/
+__pycache__/
+*.pyc
+
+# Sensitive files
+cookies_account1.json
+cookies_account2.json
+service_account.json
+
+# Lock files
+bot_session.lock

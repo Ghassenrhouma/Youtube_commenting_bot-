@@ -463,6 +463,43 @@ def passive_browse_session(page=None):
             context.close()
 
 
+def _scrape_new_comment_id(page) -> str:
+    """Scrape the real YouTube comment ID of the most recently posted comment."""
+    try:
+        # Scroll back to top of comments where new comment appears
+        page.evaluate("document.querySelector('#comments')?.scrollIntoView()")
+        time.sleep(random.uniform(1.5, 2.5))
+
+        # Try to find comment ID from the first comment thread
+        comment_id = page.evaluate("""
+            () => {
+                const threads = document.querySelectorAll('ytd-comment-thread-renderer');
+                for (const thread of threads) {
+                    const el = thread.querySelector('#comment');
+                    if (el) {
+                        // Try data attribute first
+                        const id = el.getAttribute('data-comment-id') ||
+                                   thread.getAttribute('data-comment-id');
+                        if (id) return id;
+                        // Try extracting from anchor href inside the thread
+                        const link = thread.querySelector('a[href*="lc="]');
+                        if (link) {
+                            const match = link.href.match(/lc=([^&]+)/);
+                            if (match) return match[1];
+                        }
+                    }
+                }
+                return null;
+            }
+        """)
+        if comment_id:
+            print(f"  [COMMENT ID] Scraped: {comment_id}")
+        return comment_id or ""
+    except Exception as e:
+        print(f"  [COMMENT ID] Could not scrape: {e}")
+        return ""
+
+
 def post_comment(video_id: str, comment_text: str, page=None, video_title: str = "") -> str:
     if DRY_RUN:
         print(f"[DRY RUN] Would post comment on {video_id}:")
@@ -524,7 +561,7 @@ def post_comment(video_id: str, comment_text: str, page=None, video_title: str =
         human_click_element(pg, submit_btn)
         time.sleep(random.uniform(3.0, 5.0))
 
-        return f"posted_{video_id}"
+        return _scrape_new_comment_id(pg) or f"posted_{video_id}_{int(time.time())}"
 
     if page is not None:
         return _execute(page)
@@ -604,7 +641,7 @@ def post_reply(video_id: str, parent_comment_id: str, reply_text: str, comment_t
             human_click_element(page, submit_btn)
             time.sleep(random.uniform(3.0, 5.0))
 
-            return f"reply_{parent_comment_id}"
+            return _scrape_new_comment_id(page) or f"reply_{parent_comment_id}_{int(time.time())}"
         finally:
             context.close()
 

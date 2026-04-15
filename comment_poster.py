@@ -742,10 +742,11 @@ def scrape_and_reply(video_id: str, video_title: str, is_replyable_fn, generate_
 
         print(f"  [REPLY] ✓ Submission confirmed (input cleared)")
 
+        scraped_id = _scrape_new_comment_id(pg)
         return {
             "comment_text": target_text,
             "reply_text": reply_text,
-            "comment_id": f"reply_{video_id}",
+            "comment_id": scraped_id or f"reply_{video_id}_{int(time.time())}",
         }
 
     if page is not None:

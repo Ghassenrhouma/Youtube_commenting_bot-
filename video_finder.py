@@ -348,61 +348,6 @@ def _is_replyable(comment_text: str) -> bool:
     return True
 
 
-def get_video_comments(video_id: str, max_results: int = 10, page=None) -> list:
-    def _scrape(pg):
-        results = []
-        pg.goto(f"https://www.youtube.com/watch?v={video_id}")
-        pg.wait_for_load_state("networkidle")
-
-        for _ in range(4):
-            pg.evaluate("window.scrollBy(0, 500)")
-            time.sleep(1.5)
-
-        pg.wait_for_selector("ytd-comment-thread-renderer", timeout=15000)
-
-        threads = pg.query_selector_all("ytd-comment-thread-renderer")
-        for thread in threads:
-            if len(results) >= max_results:
-                break
-
-            comment_id = thread.get_attribute("id") or ""
-
-            author_el = thread.query_selector("#author-text")
-            author = (author_el.inner_text() if author_el else "").strip()
-
-            text_el = thread.query_selector("#content-text")
-            text = (text_el.inner_text() if text_el else "").strip()
-
-            like_el = thread.query_selector("#vote-count-middle")
-            like_text = (like_el.inner_text() if like_el else "").strip()
-            try:
-                like_count = int(like_text.replace(",", "")) if like_text else 0
-            except ValueError:
-                like_count = 0
-
-            if not text or not _is_replyable(text):
-                continue
-
-            results.append({
-                "comment_id": comment_id,
-                "author": author,
-                "text": text,
-                "like_count": like_count,
-            })
-        return results
-
-    if page is not None:
-        return _scrape(page)
-
-    with sync_playwright() as p:
-        context = get_browser_context(p)
-        try:
-            pg = context.new_page()
-            patch_page(pg)
-            return _scrape(pg)
-        finally:
-            context.close()
-
 
 def get_popular_videos_for_replies(max_results: int = 5, seen_ids: set = None, page=None) -> list:
     if seen_ids is None:
@@ -428,20 +373,3 @@ def get_popular_videos_for_replies(max_results: int = 5, seen_ids: set = None, p
     return popular
 
 
-if __name__ == "__main__":
-    print("--- Testing keyword search ---")
-    videos = get_videos_by_keyword("amazon fba china shipping", max_results=5)
-    for v in videos:
-        print(f"  {v['video_id']} | {v['title'][:60]} | {v['upload_time']}")
-
-    print("\n--- Testing channel scrape (Jungle Scout) ---")
-    videos = get_channel_recent_videos(
-        "https://www.youtube.com/@JungleScout/videos", "Jungle Scout", max_results=2
-    )
-    for v in videos:
-        print(f"  {v['video_id']} | {v['title'][:60]}")
-
-    print("\n--- Testing comment scrape ---")
-    comments = get_video_comments("dQw4w9WgXcQ", max_results=3)
-    for c in comments:
-        print(f"  [{c['like_count']} likes] {c['text'][:80]}")

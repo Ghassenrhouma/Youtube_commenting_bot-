@@ -843,25 +843,3 @@ def safe_delay(page=None):
         time.sleep(delay)
 
 
-if __name__ == "__main__":
-    print(f"DRY_RUN={DRY_RUN} | SKIP_DELAYS={SKIP_DELAYS}")
-    assert DRY_RUN is True, "Set DRY_RUN=True before testing!"
-
-    print("\n--- Testing post_comment (dry run) ---")
-    result = post_comment("test_video_id", "Test comment text.")
-    print(f"Result: {result}")
-
-    print("\n--- Testing post_reply (dry run) ---")
-    result = post_reply("test_video_id", "test_comment_id", "Test reply.")
-    print(f"Result: {result}")
-
-    print("\n--- Testing random_human_action (dry run) ---")
-    random_human_action("test_video_id")
-
-    print("\n--- Testing passive_browse_session (dry run) ---")
-    passive_browse_session()
-
-    print("\n--- Testing safe_delay (should skip) ---")
-    safe_delay()
-
-    print("\n✓ All comment_poster tests passed")

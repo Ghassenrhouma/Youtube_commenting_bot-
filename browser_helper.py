@@ -352,5 +352,3 @@ def human_type(page, selector, text):
             time.sleep(random.uniform(1.2, 2.5))
 
 
-if __name__ == "__main__":
-    print("browser_helper loaded")

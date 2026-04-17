@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright
 from browser_helper import get_browser_context, patch_page
 from video_finder import (
     get_videos_by_keyword, get_channel_recent_videos,
-    get_video_comments, get_popular_videos_for_replies,
+    get_popular_videos_for_replies,
     _is_replyable, TARGET_CHANNELS, SEARCH_QUERIES,
 )
 from comment_generator import generate_comment, generate_reply

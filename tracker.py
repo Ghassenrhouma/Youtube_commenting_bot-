@@ -57,15 +57,3 @@ def log_action(video_id, video_title, text, comment_id, status,
     ])
 
 
-if __name__ == "__main__":
-    log_action(
-        video_id="test123",
-        video_title="Test Video",
-        text="Test comment",
-        comment_id="dry_run_id",
-        status="posted",
-        action_type="top-level comment",
-        source="keyword_search",
-        dry_run=True
-    )
-    print("✓ Tracker dry run passed")

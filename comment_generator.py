@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import json
 import random
@@ -134,20 +135,14 @@ def _call_llm(system_prompt: str, user_prompt: str, retries: int = 5) -> str:
 
 
 def _strip_thinking(text: str) -> str:
-    """Remove Qwen3 <think>...</think> reasoning block if present."""
-    import re as _re
-    return _re.sub(r"<think>.*?</think>", "", text, flags=_re.DOTALL).strip()
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
 def _strip_dashes(text: str) -> str:
-    """Remove all dash variants — model sometimes ignores the prompt rule."""
     for dash in ["—", "–", " - ", "-"]:
         text = text.replace(dash, ", ")
-    # Clean up any double commas or leading/trailing commas left behind
-    import re as _re
-    text = _re.sub(r",\s*,", ",", text)
-    text = text.strip(", ")
-    return text
+    text = re.sub(r",\s*,", ",", text)
+    return text.strip(", ")
 
 
 def _parse_variations(raw: str) -> str:
@@ -173,29 +168,3 @@ def generate_reply(video_title: str, existing_comment_text: str) -> str:
     return _parse_variations(raw)
 
 
-if __name__ == "__main__":
-    print("--- Testing comment generation (FBA video) ---")
-    for i in range(3):
-        comment = generate_comment(
-            "Amazon FBA Shipping From China — Full Guide 2025",
-            "Step by step covering freight forwarders, customs, FBA prep"
-        )
-        print(f"  Run {i+1}: {comment}\n")
-
-    print("--- Testing comment generation (sourcing video) ---")
-    for i in range(3):
-        comment = generate_comment(
-            "How to Find Reliable Suppliers on Alibaba in 2025",
-            "Vetting suppliers, avoiding scams, negotiating MOQs"
-        )
-        print(f"  Run {i+1}: {comment}\n")
-
-    print("--- Testing reply generation ---")
-    for i in range(3):
-        reply = generate_reply(
-            "How to Ship from China to Amazon FBA",
-            "I had so many problems with my shipment stuck at customs for 3 weeks"
-        )
-        print(f"  Run {i+1}: {reply}\n")
-
-    print("✓ comment_generator tests passed")

@@ -1,33 +1,38 @@
-import json
 import os
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
 
 def verify_cookies() -> bool:
-    cookies_path = os.getenv("COOKIES_PATH", "youtube_cookies.json")
-    with open(cookies_path) as f:
-        cookies = json.load(f)
+    profile_path = os.getenv("PROFILE_PATH", "profiles/default")
+    if not os.path.exists(profile_path):
+        print(f"✗ Profile not found at '{profile_path}' — run login.py first")
+        return False
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
+        context = p.chromium.launch_persistent_context(
+            user_data_dir=profile_path,
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
         try:
-            context.add_cookies(cookies)
             page = context.new_page()
             page.goto("https://www.youtube.com")
-            page.wait_for_load_state("networkidle")
-
+            try:
+                page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                pass
             if page.query_selector("#avatar-btn"):
-                print("✓ Cookies valid — logged in")
+                print("✓ Profile valid — logged in")
                 return True
             else:
-                print("✗ Cookies expired — re-run save_cookies.py")
+                print(f"✗ Not logged in — run login.py for profile '{profile_path}'")
                 return False
         finally:
-            browser.close()
+            context.close()
+
 
 if __name__ == "__main__":
-    result = verify_cookies()
-    print(result)
+    verify_cookies()

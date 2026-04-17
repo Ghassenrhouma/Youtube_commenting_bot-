@@ -1,4 +1,3 @@
-import json
 import random
 import time
 import os
@@ -6,12 +5,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-COOKIES_PATH = os.getenv("COOKIES_PATH", "youtube_cookies.json")
+PROFILE_PATH = os.getenv("PROFILE_PATH", "profiles/default")
 HEADLESS = os.getenv("HEADLESS", "True").lower() == "true"
 
 
 def get_browser_context(playwright):
-    browser = playwright.chromium.launch(
+    os.makedirs(PROFILE_PATH, exist_ok=True)
+    context = playwright.chromium.launch_persistent_context(
+        user_data_dir=PROFILE_PATH,
         headless=HEADLESS,
         args=[
             "--disable-blink-features=AutomationControlled",
@@ -21,8 +22,6 @@ def get_browser_context(playwright):
             "--window-size=1280,800",
             "--lang=en-US",
         ],
-    )
-    context = browser.new_context(
         user_agent=(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -33,9 +32,6 @@ def get_browser_context(playwright):
         timezone_id="America/New_York",
         extra_http_headers={"Accept-Language": "en-US,en;q=0.9"},
     )
-    with open(COOKIES_PATH) as f:
-        cookies = json.load(f)
-    context.add_cookies(cookies)
     return context
 
 

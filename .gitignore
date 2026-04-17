@@ -9,5 +9,8 @@ cookies_account1.json
 cookies_account2.json
 service_account.json
 
+# Persistent browser profiles (contain session data — never commit)
+profiles/
+
 # Lock files
 bot_session.lock

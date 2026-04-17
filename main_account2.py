@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 # Override COOKIES_PATH before browser_helper is imported so it picks up account 2's cookies
-os.environ["COOKIES_PATH"] = os.getenv("ACCOUNT1_COOKIES", "cookies_account1.json")
+os.environ["PROFILE_PATH"] = os.getenv("ACCOUNT1_PROFILE", "profiles/account1")
 os.environ["ACCOUNT_ID"] = "account1"
 os.environ["DELAY_MIN"] = "450"   # 7.5 min between comments
 os.environ["DELAY_MAX"] = "530"   # 8.8 min max
